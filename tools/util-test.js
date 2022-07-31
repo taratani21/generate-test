@@ -1,5 +1,5 @@
-const jsParser = require('acorn').Parser;
-const Util = require('../src/util.js');
+import { Parser as jsParser } from 'acorn';
+import { getObjectFromExpression } from '../src/util.js';
 let parsed, code, node, obj;
 
 // code = `group => group.featureGroup.label.en === 'Data'`;
@@ -9,7 +9,7 @@ let parsed, code, node, obj;
 // console.log('-'.repeat(80));
 
 code = `this.dates.reduce((acc, val) => acc + +val.totalUsageThisDate, 0) / this.dates.length`;
-console.log({ code,  result: Util.getObjectFromExpression(code) });
+console.log({ code,  result: getObjectFromExpression(code) });
 console.log('-'.repeat(80));
 
 // code = `foo.bar.baz( ([foo, event]) => { event.x.y.z(); foo.bar.x.y = 1; })`;

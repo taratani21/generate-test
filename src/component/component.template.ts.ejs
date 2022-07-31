@@ -1,4 +1,3 @@
-// tslint:disable
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Pipe, PipeTransform, Injectable, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA, Directive, Input, Output } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -25,36 +24,27 @@ class <%- pipe.charAt(0).toUpperCase() + pipe.slice(1) -%>Pipe implements PipeTr
 <% }) -%>
 
 describe('<%- className %>', () => {
-  let fixture;
-  let component;
+  let fixture: ComponentFixture<<%- className %>>;
+  let component: any;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ FormsModule, ReactiveFormsModule ],
       declarations: [
         <%- className %>,
-        <%- config.pipes.map(e => e.charAt(0).toUpperCase() + e.slice(1) + 'Pipe').join(', ') %>,
-        <%- config.directives.map(e => e.charAt(0).toUpperCase() + e.slice(1) + 'Directive').join(', ') %>
+        <% if(config.pipes.length > 0){ %> <%- config.pipes.map(e => e.charAt(0).toUpperCase() + e.slice(1) + 'Pipe').join(', ') %>,<%} %>
+        <% if(config.directives.length > 0){ %> <%- config.directives.map(e => e.charAt(0).toUpperCase() + e.slice(1) + 'Directive').join(', ') %><%} %>
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ],
       providers: [
         <%- providerMocks.providers.join(',\n        ') %>
       ]
-    }).overrideComponent(<%- className %>, {
-    <% componentProviderMocks.forEach(mock => { %>
-      <%- mock -%>
-    <% }) %>
     }).compileComponents();
     fixture = TestBed.createComponent(<%- className %>);
-    component = fixture.debugElement.componentInstance;
+    component = fixture.componentInstance;
   });
 
-  afterEach(() => {
-    component.ngOnDestroy = function() {};
-    fixture.destroy();
-  });
-
-  it('should run #constructor()', async () => {
+  it('should run #constructor()', () => {
     expect(component).toBeTruthy();
   });
 

@@ -1,46 +1,35 @@
-const fs = require('fs');
-const path = require('path');
-const klassTemplate = fs.readFileSync(path.join(__dirname, 'src', 'class', 'class.template.ts.ejs'), 'utf8');
-const componentTemplate = fs.readFileSync(path.join(__dirname, 'src', 'component', 'component.template.ts.ejs'), 'utf8');
-const directiveTemplate = fs.readFileSync(path.join(__dirname, 'src', 'directive', 'directive.template.ts.ejs'), 'utf8');
-const injectableTemplate = fs.readFileSync(path.join(__dirname, 'src', 'injectable', 'injectable.template.ts.ejs'), 'utf8');
-const pipeTemplate = fs.readFileSync(path.join(__dirname, 'src', 'pipe', 'pipe.template.ts.ejs'), 'utf8');
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const klassTemplate = readFileSync(join(__dirname, 'src', 'class', 'class.template.ts.ejs'), 'utf8');
+const componentTemplate = readFileSync(join(__dirname, 'src', 'component', 'component.template.ts.ejs'), 'utf8');
+const directiveTemplate = readFileSync(join(__dirname, 'src', 'directive', 'directive.template.ts.ejs'), 'utf8');
+const injectableTemplate = readFileSync(join(__dirname, 'src', 'injectable', 'injectable.template.ts.ejs'), 'utf8');
+const pipeTemplate = readFileSync(join(__dirname, 'src', 'pipe', 'pipe.template.ts.ejs'), 'utf8');
 
-module.exports = {
-  // framework: 'karma', // or 'jest'
-  // .spec file EJS templtes
-  templates: {
-    klass: klassTemplate,
-    component: componentTemplate,
-    directive: directiveTemplate,
-    injectable: injectableTemplate, 
-    pipe: pipeTemplate 
-  },
-  // necessary directives used for a component test
-  directives: [
-    'oneviewPermitted'
-  ], 
-  // necessary pipes used for a component test
-  pipes: [
-    'translate', 'phoneNumber', 'safeHtml'
-  ],
-  // when convert to JS, some codes need to be replaced to work 
-  replacements: [
-    { from: 'require\\("html-custom-element"\\)', to: '{}'}, // some 3rd party require statements causes error, using import or windows directly
-    { from: '^\\S+\\.define\\(.*\\);', to: ''} // some commands causes error
-  ],
-  // when constructor typs is as following, create a mock class with this properties
-  // e.g. @Injectable() MockElementRef { nativeElement = {}; }
-  providerMocks: {
-    ElementRef: ['nativeElement = {};'],
-    Router: ['navigate() {};'],
-    Document: ['querySelector() {};'],
-    HttpClient: ['post() {};'],
-    TranslateService: ['translate() {};'],
-    EncryptionService: [],
-  },
-  // when ngentest runs with a directory, include only these files
-  includeMatch: [/(component|directive|pipe|service).ts/],
-  // when ngentest runs with a directory, exclude these files
-  excludeMatch: []
-}
+export const framework = 'karma';
+export const templates = {
+  klass: klassTemplate,
+  component: componentTemplate,
+  directive: directiveTemplate,
+  injectable: injectableTemplate,
+  pipe: pipeTemplate
+};
+export const directives = [];
+export const pipes = [];
+export const replacements = [
+  { from: 'require\\("html-custom-element"\\)', to: '{}' },
+  { from: '^\\S+\\.define\\(.*\\);', to: '' } // some commands causes error
+];
+export const providerMocks = {
+  ElementRef: ['nativeElement = {};'],
+  Router: ['navigate() {};'],
+  Document: ['querySelector() {};'],
+  HttpClient: ['post() {};'],
+  TranslateService: ['translate() {};'],
+  EncryptionService: [],
+};
+export const includeMatch = [/(component|directive|pipe|service).ts/];
+export const excludeMatch = [];

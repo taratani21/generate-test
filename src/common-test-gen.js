@@ -1,19 +1,19 @@
-const path = require('path');
-const fs = require('fs');
-const ejs = require('ejs');
-const ts = require('typescript');
-const TypescriptParser = require('./typescript-parser');
+import { render } from 'ejs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { basename, resolve } from 'path';
+import { createInterface } from 'readline';
+import pkg from 'typescript';
+const { SyntaxKind } = pkg;
 
-const Util = require('./util.js');
+import TypescriptParser from './typescript-parser.js';
+import Util from './util.js';
 
 // convert Typescript-parsed nodes to an array
-function __toArray(el) {
-  return Array.isArray(el) ? el : 
-  el && el.node ? [el] :
-  [];
+export function __toArray(el) {
+  return Array.isArray(el) ? el : el && el.node ? [el] : [];
 }
 
-function __get(node) {
+export function __get(node) {
   node = node.node || node;
 
   const name = node.name && node.name.escapedText;
@@ -21,120 +21,130 @@ function __get(node) {
   if (node.type && node.type.typeName) {
     type = node.type.typeName.escapedText;
   } else if (node.type && node.type.kind) {
-    type = ts.SyntaxKind[node.type.kind].replace(/Keyword/,'').toLowerCase()
-  } 
+    type = SyntaxKind[node.type.kind].replace(/Keyword/, '').toLowerCase();
+  }
 
   let decorator;
   if (node.decorators) {
     const name = node.decorators[0].expression.expression.escapedText;
     const param = (node.decorators[0].expression.arguments[0] || {}).text;
-    decorator = {name, param}
+    decorator = { name, param };
   }
 
-  return {type, name, decorator};
+  return { type, name, decorator };
 }
 
-function __getKlassDecorator(klass) {
+export function __getKlassDecorator(klass) {
   const klassDecorator = {};
-  const props = klass.get('Decorator')
+  const props = klass
+    .get('Decorator')
     .get('CallExpression')
     .get('ObjectLiteralExpression')
-    .get('PropertyAssignment')
+    .get('PropertyAssignment');
 
-  __toArray(props).forEach(el => {
-      const key = el.children[0].node.escapedText;
-      const value = el.children[1].node;
-      klassDecorator[key] = value;
-    });
+  __toArray(props).forEach((el) => {
+    const key = el.children[0].node.escapedText;
+    const value = el.children[1].node;
+    klassDecorator[key] = value;
+  });
 
   return klassDecorator;
 }
 
-
 // all imports info. from typescript
 // { Component: { moduleName: xxx, alias: xxx } }
-function getImports() {
+export function getImports() {
   const imports = [];
 
   const parsed = new TypescriptParser(this.typescript);
-  __toArray(parsed.rootNode.get('ImportDeclaration'))
-    .map(prop => {
+  __toArray(parsed.rootNode.get('ImportDeclaration')).map((prop) => {
     const moduleName = prop.node.moduleSpecifier.text;
     const namedImports = prop.get('ImportClause').get('NamedImports');
     const namespaceImport = prop.get('ImportClause').get('NamespaceImport');
 
     if (namespaceImport.node) {
       const alias = namespaceImport.node.name.escapedText;
-      imports.push({name: '*', alias, moduleName});
+      imports.push({ name: '*', alias, moduleName });
     } else if (namedImports.node) {
-      namedImports.node.elements.forEach(node => {
+      namedImports.node.elements.forEach((node) => {
         const name = node.name.escapedText;
-        imports.push({name, alias: undefined, moduleName});
-      })
+        imports.push({ name, alias: undefined, moduleName });
+      });
     }
   });
 
   return imports;
 }
 
-function getKlassProperties() {
+export function getKlassProperties() {
   return __toArray(this.klass.get('PropertyDeclaration'))
     .concat(this.klass.get('SetAccessor'))
     .concat(this.klass.get('GetAccessor'))
-  .map(prop => {
-    return __get(prop);
-  })
-  .filter(el => el.name);
+    .map((prop) => {
+      return __get(prop);
+    })
+    .filter((el) => el.name);
 }
 
-function getKlassSetters() { return __toArray(this.klass.get('SetAccessor')); }
-function getKlassGetters() { return __toArray(this.klass.get('GetAccessor')); }
-function getKlassMethods() { return __toArray(this.klass.get('MethodDeclaration')); }
+export function getKlassSetters() {
+  return __toArray(this.klass.get('SetAccessor'));
+}
+export function getKlassGetters() {
+  return __toArray(this.klass.get('GetAccessor'));
+}
+export function getKlassMethods() {
+  return __toArray(this.klass.get('MethodDeclaration'));
+}
 
-function getKlass() {
+export function getKlass() {
   const parsed = new TypescriptParser(this.typescript);
   const fileBasedKlassName = Util.getClassName(this.tsPath);
-  
+
   const klassDeclarations = __toArray(parsed.rootNode.get('ClassDeclaration'));
   const klass =
-    klassDeclarations.find(decl => decl.node.name.escapedText === fileBasedKlassName) ||
+    klassDeclarations.find((decl) => decl.node.name.escapedText === fileBasedKlassName) ||
     klassDeclarations[0];
 
   if (!klass) {
-    throw new Error(`Error:TypeScriptParser Could not find ` +
-      `${fileBasedKlassName || 'a class'} from ${this.tsPath}`);
+    throw new Error(
+      `Error:TypeScriptParser Could not find ` +
+        `${fileBasedKlassName || 'a class'} from ${this.tsPath}`,
+    );
   }
 
   return klass;
 }
 
-function getAngularType() {
+export function getAngularType() {
   return (__get(this.klass).decorator || {}).name;
 }
 
 // import statement mocks;
-function getImportMocks() {
+export function getImportMocks() {
   const importMocks = [];
   const klassName = this.klass.node.name.escapedText;
-  const moduleName = path.basename(this.tsPath).replace(/.ts$/, '');
- 
+  const moduleName = basename(this.tsPath).replace(/.ts$/, '');
+
   const imports = {};
   if (['component', 'directive'].includes(this.angularType)) {
     imports[`@angular/core`] = ['Component'];
   }
-  imports[`./${moduleName}`] = [klassName]
+  imports[`./${moduleName}`] = [klassName];
 
   if (this.klass.get('Constructor').node) {
     const paremeters = this.klass.get('Constructor').node.parameters;
-    paremeters.forEach(param => {
-      const {name, type, decorator} = __get(param);
+    paremeters.forEach((param) => {
+      const { name, type, decorator } = __get(param);
       const exportName = decorator ? decorator.name : type;
-      const emport = this.imports.find(el => el.name === exportName); // name , alias
+      const emport = this.imports.find((el) => el.name === exportName); // name , alias
 
       const importStr = emport.alias ? `${exportName} as ${emport.alias}` : exportName;
-      if (exportName === 'Inject') { // do not import Inject, but import Inject name
+      if (exportName === 'Inject') {
+        // do not import Inject, but import Inject name
         const commonTypes = ['APP_BASE_HREF', 'DOCUMENT', 'LOCATION_INITIALIZED', 'Time'];
-        const importLib = commonTypes.includes(decorator.param) ? '@angular/common' : '@angular/core';
+        const importLib = commonTypes.includes(decorator.param)
+          ? '@angular/common'
+          : '@angular/core';
         imports[importLib] = (imports[importLib] || []).concat(decorator.param);
       } else {
         imports[emport.moduleName] = (imports[emport.moduleName] || []).concat(importStr);
@@ -144,33 +154,38 @@ function getImportMocks() {
 
   for (var lib in imports) {
     const fileNames = imports[lib].join(', ');
-    importMocks.push(`import { ${fileNames} } from '${lib}';`)
+    importMocks.push(`import { ${fileNames} } from '${lib}';`);
   }
 
   return importMocks;
 }
 
-function getProviderMocks(ctorMockData) {
-  const providerMocks = {providers: [], mocks: []};
+export function getProviderMocks(ctorMockData) {
+  const providerMocks = { providers: [], mocks: [] };
   if (!this.klass.get('Constructor').node) {
     return providerMocks;
   }
 
-  const paremeters = this.klass.get('Constructor').node.parameters
-  paremeters.forEach(param => {
-    const {name, type, decorator} = __get(param);
+  const paremeters = this.klass.get('Constructor').node.parameters;
+  paremeters.forEach((param) => {
+    const { name, type, decorator } = __get(param);
     const injectClassName = decorator && decorator.name === 'Inject' && decorator.param;
-    const injectUseStatement = 
-      injectClassName === 'DOCUMENT' ? `useClass: MockDocument` :
-      injectClassName === 'PLATFORM_ID' ? `useValue: 'browser'` :
-      injectClassName === 'LOCALE_ID' ? `useValue: 'en'` : `useValue: ${injectClassName}`;
+    const injectUseStatement =
+      injectClassName === 'DOCUMENT'
+        ? `useClass: MockDocument`
+        : injectClassName === 'PLATFORM_ID'
+        ? `useValue: 'browser'`
+        : injectClassName === 'LOCALE_ID'
+        ? `useValue: 'en'`
+        : `useValue: ${injectClassName}`;
 
     const mockData = ctorMockData[name];
-    mockData && (delete mockData['undefiend']);
-    const mockDataJS = !mockData ? [] : 
-      Object.entries(mockData).map(([k, v]) => `${k} = ${Util.objToJS(v)};`)
+    mockData && delete mockData['undefiend'];
+    const mockDataJS = !mockData
+      ? []
+      : Object.entries(mockData).map(([k, v]) => `${k} = ${Util.objToJS(v)};`);
 
-    const emport = this.imports.find(el => el.name === type); // name , alias, moduleName
+    const emport = this.imports.find((el) => el.name === type); // name , alias, moduleName
     const emportFromFile = !!(emport && emport.moduleName.match(/^(\.|src\/)/));
     const configMockJS = this.config.providerMocks[type];
     let mockFn;
@@ -204,7 +219,8 @@ function getProviderMocks(ctorMockData) {
             data: observableOf({})
           }
         }`);
-    } else if (this.config.providerMocks[type]) { // if mock is given from config
+    } else if (this.config.providerMocks[type]) {
+      // if mock is given from config
       providerMocks.providers.push(`{ provide: ${type}, useClass: Mock${type} }`);
     } else if (emportFromFile) {
       providerMocks.providers.push(`{ provide: ${type}, useClass: Mock${type} }`);
@@ -218,9 +234,9 @@ function getProviderMocks(ctorMockData) {
   return providerMocks;
 }
 
-function getInputMocks() {
-  const inputMocks = {html: [], js: []};
-  this.klassProperties.forEach(({type, name, decorator}) => {
+export function getInputMocks() {
+  const inputMocks = { html: [], js: [] };
+  this.klassProperties.forEach(({ type, name, decorator }) => {
     if (decorator && decorator.name === 'Input') {
       inputMocks.html.push(`[${decorator.param || name}]="${name}"`);
       inputMocks.js.push(`${name}: ${type};`);
@@ -230,11 +246,11 @@ function getInputMocks() {
   return inputMocks;
 }
 
-function getOutputMocks() {
-  const outputMocks = {html: [], js: []};
+export function getOutputMocks() {
+  const outputMocks = { html: [], js: [] };
 
-  this.klassProperties.forEach(({type, name, decorator}) => {
-    const funcName = `on${name.replace(/^[a-z]/, x => x.toUpperCase())}`;
+  this.klassProperties.forEach(({ type, name, decorator }) => {
+    const funcName = `on${name.replace(/^[a-z]/, (x) => x.toUpperCase())}`;
     if (decorator && decorator.name === 'Output') {
       outputMocks.html.push(`(${decorator.param || name})="${funcName}($event)"`);
       outputMocks.js.push(`${funcName}(event): void { /* */ }`);
@@ -244,24 +260,26 @@ function getOutputMocks() {
   return outputMocks;
 }
 
-function getComponentProviderMocks() {
+export function getComponentProviderMocks() {
   const mocks = [];
 
   const decorator = __getKlassDecorator(this.klass);
   if (decorator.providers) {
-    const klassNames = decorator.providers.elements.map(el => el.escapedText);
-    const providerMocks = klassNames.filter(name => name).map(name =>  {
-      return `{ provide: ${name}, useClass: Mock${name} }`;
-    });
+    const klassNames = decorator.providers.elements.map((el) => el.escapedText);
+    const providerMocks = klassNames
+      .filter((name) => name)
+      .map((name) => {
+        return `{ provide: ${name}, useClass: Mock${name} }`;
+      });
     if (providerMocks.length) {
       mocks.push(`set: { providers: [${providerMocks.join(',\n')}] }`);
     }
-  } 
+  }
 
   return mocks;
 }
 
-function getDirectiveSelector() {
+export function getDirectiveSelector() {
   const decorator = __getKlassDecorator(this.klass);
 
   if (decorator.selector) {
@@ -276,7 +294,7 @@ function getDirectiveSelector() {
   }
 }
 
-function getExistingTests(ejsData, existingTestCodes) {
+export function getExistingTests(ejsData, existingTestCodes) {
   const existingTests = {};
   const allTests = Object.assign({}, ejsData.accessorTests || {}, ejsData.functionTests || {});
   for (var funcName in allTests) {
@@ -288,22 +306,22 @@ function getExistingTests(ejsData, existingTestCodes) {
   return existingTests;
 }
 
-function getGenerated (ejsData, options) {
+export function getGenerated(ejsData, options) {
   let generated;
   const funcName = options.method;
-  const specPath = path.resolve(this.tsPath.replace(/\.ts$/, '.spec.ts')); 
-  const existingTestCodes = fs.existsSync(specPath) && fs.readFileSync(specPath, 'utf8');
+  const specPath = resolve(this.tsPath.replace(/\.ts$/, '.spec.ts')); 
+  const existingTestCodes = existsSync(specPath) && readFileSync(specPath, 'utf8');
   if (funcName) {
     // if user asks to generate only one function
     generated = ejsData.functionTests[funcName] || ejsData.accessorTests[funcName];
   } else if (existingTestCodes && specPath && !options.force && !options.forcePrint) {
-    // if there is existing tests, then add only new function tests at the end
+    // if there is existing tests, then add only new export function tests at the end
     const existingTests = getExistingTests(ejsData, existingTestCodes);
     const newTests = [];
     const allTests = Object.assign({}, ejsData.accessorTests || {}, ejsData.functionTests || {});
     // get only new tests
     for (var method in existingTests) {
-      (existingTests[method] !== true) && newTests.push('  // new test by ngentest' + allTests[method]); 
+      existingTests[method] !== true && newTests.push('  // new test by ngentest' + allTests[method]);
     }
     if (newTests.length) {
       // add new tests at the end
@@ -316,48 +334,49 @@ function getGenerated (ejsData, options) {
         });
       }
     } else {
-      generated = ejs.render(this.template, ejsData).replace(/\n\s+$/gm, '\n');
+      generated = render(this.template, ejsData).replace(/\n\s+$/gm, '\n');
     }
   } else {
     // if no existing tests
-    generated = ejs.render(this.template, ejsData).replace(/\n\s+$/gm, '\n');
+    generated = render(this.template, ejsData).replace(/\n\s+$/gm, '\n');
   }
   return generated;
 }
 
-function writeToSpecFile (specPath, generated) {
-  fs.writeFileSync(specPath, generated);
+export function writeToSpecFile(specPath, generated) {
+  writeFileSync(specPath, generated);
   console.log('Generated unit test to', specPath);
 }
 
-function backupExistingFile (specPath, generated) {
-  if (fs.existsSync(specPath)) {
-    const backupTime = (new Date()).toISOString().replace(/[^\d]/g, '').slice(0, -5);
-    const backupContents = fs.readFileSync(specPath, 'utf8');
+export function backupExistingFile(specPath, generated) {
+  if (existsSync(specPath)) {
+    const backupTime = new Date().toISOString().replace(/[^\d]/g, '').slice(0, -5);
+    const backupContents = readFileSync(specPath, 'utf8');
     if (backupContents !== generated) {
-      fs.writeFileSync(`${specPath}.${backupTime}`, backupContents, 'utf8'); // write backup
+      writeFileSync(`${specPath}.${backupTime}`, backupContents, 'utf8'); // write backup
       console.log('Backup the exisiting file to', `${specPath}.${backupTime}`);
     }
   }
-};
+}
 
-function writeGenerated (generated, options) {
+export function writeGenerated(generated, options) {
   const toFile = options.spec;
   const force = options.force;
-  const specPath = path.resolve(this.tsPath.replace(/\.ts$/, '.spec.ts'));
+  const specPath = resolve(this.tsPath.replace(/\.ts$/, '.spec.ts'));
   generated = generated.replace(/\r\n/g, '\n');
 
-  const specFileExists = fs.existsSync(specPath);
+  const specFileExists = existsSync(specPath);
 
   if (toFile && specFileExists && force) {
     backupExistingFile(specPath, generated);
     writeToSpecFile(specPath, generated);
   } else if (toFile && specFileExists && !force) {
-    const readline = require('readline');
-    const rl = readline.createInterface(process.stdin, process.stdout);
-    console.warn('\x1b[33m%s\x1b[0m',
-      `WARNING!!, Spec file, ${specPath} already exists. Overwrite it?`);
-    rl.question('Continue? ', answer => {
+    const rl = createInterface(process.stdin, process.stdout);
+    console.warn(
+      '\x1b[33m%s\x1b[0m',
+      `WARNING!!, Spec file, ${specPath} already exis Overwrite it?`,
+    );
+    rl.question('Continue? ', (answer) => {
       if (answer.match(/y/i)) {
         backupExistingFile(specPath, generated);
         writeToSpecFile(specPath, generated);
@@ -373,25 +392,3 @@ function writeGenerated (generated, options) {
     process.stdout.write(generated);
   }
 }
- 
-const CommonGenFunctions = {
-  getKlass,
-  getImports,
-  getKlassProperties,
-  getKlassGetters,
-  getKlassSetters,
-  getKlassMethods,
-  getAngularType,
-
-  getInputMocks, // input coddes
-  getOutputMocks, // output codes
-  getImportMocks, // import statements code
-  getProviderMocks, // module provider code
-  getComponentProviderMocks,
-  getDirectiveSelector,
-
-  getGenerated,
-  writeGenerated
-};
-
-module.exports = CommonGenFunctions;

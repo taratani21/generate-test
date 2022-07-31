@@ -1,4 +1,4 @@
-var Parser = require('../src/typescript-parser.js');
+import Parser from '../src/typescript-parser.js';
 
 var typescript = `
 @Component({

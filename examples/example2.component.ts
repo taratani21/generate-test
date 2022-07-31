@@ -109,11 +109,6 @@ export class Example2Component implements OnInit {
     return true;
   }
 
-  handleFoo(amount) {
-    this.showFoo = this.amountVal > amount && !this.isValid;
-    this.showFoo ? this.myForm.get('foo').enable() : this.myForm.get('foo').disable();
-  }
-
   isFieldValid(formControl) {
     return formControl.touched && !formControl.valid;
   }

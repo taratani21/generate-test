@@ -10,45 +10,22 @@ import { Component, LOCALE_ID } from '@angular/core';
 import { Example2Component } from './example2.component';
 import { FormBuilder } from '@angular/forms';
 
-@Directive({ selector: '[oneviewPermitted]' })
-class OneviewPermittedDirective {
-  @Input() oneviewPermitted;
-}
-
-@Pipe({name: 'translate'})
-class TranslatePipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'phoneNumber'})
-class PhoneNumberPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'safeHtml'})
-class SafeHtmlPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
 describe('Example2Component', () => {
-  let fixture;
-  let component;
+  let fixture: ComponentFixture<Example2Component>;
+  let component: Example2Component;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ FormsModule, ReactiveFormsModule ],
       declarations: [
         Example2Component,
-        TranslatePipe, PhoneNumberPipe, SafeHtmlPipe,
-        OneviewPermittedDirective
+
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ],
       providers: [
         FormBuilder,
         { provide: 'LOCALE_ID', useValue: 'en' }
       ]
-    }).overrideComponent(Example2Component, {
-
     }).compileComponents();
     fixture = TestBed.createComponent(Example2Component);
     component = fixture.debugElement.componentInstance;
@@ -59,17 +36,17 @@ describe('Example2Component', () => {
     fixture.destroy();
   });
 
-  it('should run #constructor()', async () => {
+  it('should run #constructor()', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should run SetterDeclaration #showFlow', async () => {
-    component.getControlsAndCreateForm = jest.fn();
+  it('should run SetterDeclaration #showFlow', () => {
+    spyOn(component, 'getControlsAndCreateForm');
     component.showFlow = {};
     // expect(component.getControlsAndCreateForm).toHaveBeenCalled();
   });
 
-  it('should run GetterDeclaration #myData', async () => {
+  it('should run GetterDeclaration #myData', () => {
     component.data = component.data || {};
     component.data.tooltip = {
       amount: 'amount',
@@ -83,20 +60,20 @@ describe('Example2Component', () => {
 
   });
 
-  it('should run #ngOnInit()', async () => {
-    component.createForm = jest.fn();
+  it('should run #ngOnInit()', () => {
+    spyOn(component, 'createForm');
     component.ngOnInit();
     // expect(component.createForm).toHaveBeenCalled();
   });
 
-  it('should run #createForm()', async () => {
-    component.getControls = jest.fn();
-    component.getFormControls = jest.fn();
-    component.createForm = jest.fn();
+  it('should run #createForm()', () => {
+    spyOn(component, 'getControls');
+    spyOn(component, 'getFormControls');
+    spyOn(component, 'createForm');
     component.formBuilder = component.formBuilder || {};
-    component.formBuilder.group = jest.fn();
-    component.handleFoo = jest.fn();
-    component.handleBar = jest.fn();
+    spyOn(component.formBuilder, 'group');
+    spyOn(component, 'handleFoo');
+    spyOn(component, 'handleBar');
     component.createForm({});
     // expect(component.getControls).toHaveBeenCalled();
     // expect(component.getFormControls).toHaveBeenCalled();
@@ -106,41 +83,41 @@ describe('Example2Component', () => {
     // expect(component.handleBar).toHaveBeenCalled();
   });
 
-  it('should run #getFormControls()', async () => {
+  it('should run #getFormControls()', () => {
     component.selectedType = component.selectedType || {};
     component.selectedType.code = 'code';
-    component.getControls = jest.fn();
+    spyOn(component, 'getControls');
     component.getFormControls();
     // expect(component.getControls).toHaveBeenCalled();
   });
 
-  it('should run #getControls()', async () => {
+  it('should run #getControls()', () => {
     component.formControlsKeys = component.formControlsKeys || {};
     component.formControlsKeys = ['formControlsKeys'];
     component.getControls();
 
   });
 
-  it('should run #handleBar()', async () => {
+  it('should run #handleBar()', () => {
     component.data = component.data || {};
     component.data.location = {
       threshold: {}
     };
     component.myForm = component.myForm || {};
-    component.myForm.get = jest.fn().mockReturnValue({
+    spyOn(component.myForm, 'get').and.returnValue({
       valueChanges: observableOf({})
     });
-    component.isValid = jest.fn();
-    component.handleFoo = jest.fn();
+    spyOn(component, 'isValid');
+    spyOn(component, 'handleFoo');
     component.handleBar();
     // expect(component.myForm.get).toHaveBeenCalled();
     // expect(component.isValid).toHaveBeenCalled();
     // expect(component.handleFoo).toHaveBeenCalled();
   });
 
-  it('should run #handleFoo()', async () => {
+  it('should run #handleFoo()', () => {
     component.myForm = component.myForm || {};
-    component.myForm.get = jest.fn().mockReturnValue({
+    spyOn(component.myForm, 'get').and.returnValue({
       setValue: function() {},
       valueChanges: observableOf({})
     });
@@ -154,21 +131,21 @@ describe('Example2Component', () => {
     // expect(component.myForm.get).toHaveBeenCalled();
   });
 
-  it('should run #getAmount()', async () => {
+  it('should run #getAmount()', () => {
     component.data = component.data || {};
     component.data.amount = 'amount';
     component.data.amount2 = 'amount2';
     component.selected = component.selected || {};
     component.selected.id = 'id';
     component.myForm = component.myForm || {};
-    component.myForm.get = jest.fn().mockReturnValue({
+    spyOn(component.myForm, 'get').and.returnValue({
       valid: {}
     });
     component.getAmount();
     // expect(component.myForm.get).toHaveBeenCalled();
   });
 
-  it('should run #isFieldValid()', async () => {
+  it('should run #isFieldValid()', () => {
 
     component.isFieldValid({
       touched: {},
@@ -177,15 +154,15 @@ describe('Example2Component', () => {
 
   });
 
-  it('should run #isValid()', async () => {
-    component.getAmount = jest.fn();
+  it('should run #isValid()', () => {
+    spyOn(component, 'getAmount');
     component.isValid();
     // expect(component.getAmount).toHaveBeenCalled();
   });
 
-  it('should run #submit()', async () => {
+  it('should run #submit()', () => {
     component.formSubmitted = component.formSubmitted || {};
-    component.formSubmitted.emit = jest.fn();
+    spyOn(component.formSubmitted, 'emit');
     component.myForm = component.myForm || {};
     component.myForm.value = 'value';
     component.submit();

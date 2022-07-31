@@ -1,21 +1,39 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path'); // eslint-disable-line
-const yargs = require('yargs');
-const ts = require('typescript');
-const requireFromString = require('require-from-string');
-const glob = require('glob');
-const appRoot = require('app-root-path');
+// const fs = require('fs');
+// const path = require('path'); // eslint-disable-line
+// const yargs = require('yargs');
+// const ts = require('typescript');
+// const requireFromString = require('require-from-string');
+// const glob = require('glob');
 
-const config = require('./ngentest.config');
-const Util = require('./src/util.js');
-const FuncTestGen = require('./src/func-test-gen.js');
+// const config = require('./ngentest.config');
+// const Util = require('./src/util.js');
+// const FuncTestGen = require('./src/func-test-gen.js');
 
-const ComponentTestGen = require('./src/component/component-test-gen.js');
-const DirectiveTestGen = require('./src/directive/directive-test-gen.js');
-const InjectableTestGen = require('./src/injectable/injectable-test-gen.js');
-const PipeTestGen = require('./src/pipe/pipe-test-gen.js');
-const ClassTestGen = require('./src/class/class-test-gen.js');
+// const ComponentTestGen = require('./src/component/component-test-gen.js');
+// const DirectiveTestGen = require('./src/directive/directive-test-gen.js');
+// const InjectableTestGen = require('./src/injectable/injectable-test-gen.js');
+// const PipeTestGen = require('./src/pipe/pipe-test-gen.js');
+// const ClassTestGen = require('./src/class/class-test-gen.js');
+
+import fs from 'fs';
+import path from 'path';
+import yargs from 'yargs';
+import ts from 'typescript';
+import { requireFromString } from 'module-from-string';
+import glob from 'glob';
+
+import * as defaultConfig from './ngentest.config.js';
+import Util from './src/util.js';
+import FuncTestGen from './src/func-test-gen.js';
+import ComponentTestGen from './src/component/component-test-gen.js';
+import DirectiveTestGen from './src/directive/directive-test-gen.js';
+import InjectableTestGen from './src/injectable/injectable-test-gen.js';
+import PipeTestGen from './src/pipe/pipe-test-gen.js';
+import ClassTestGen from './src/class/class-test-gen.js';
+
+let config = {};
+Object.assign(config, defaultConfig);
 
 const argv = yargs.usage('Usage: $0 <tsFile> [options]')
   .options({
@@ -48,7 +66,7 @@ if (!(tsFile && fs.existsSync(tsFile))) {
 }
 
 if (argv.c && fs.existsSync(path.resolve(argv.c))) {
-  loadConfig(path.resolve(argv.c));
+  await loadConfig(path.resolve(argv.c));
 } else {
   Util.DEBUG && console.log(`${argv.c} not found. Using default config instead.`)
 }
@@ -56,11 +74,9 @@ Util.DEBUG && console.log('  *** config ***', config);
 
 Util.FRAMEWORK = config.framework || argv.framework;
 
-function loadConfig(filePath) {
-  const userConfig = require(filePath);
-  for (var key in userConfig) {
-    config[key] = userConfig[key];
-  }
+async function loadConfig(filePath) {
+  const userConfig = await import(filePath);
+  Object.assign(config, userConfig);
 }
 
 function getFuncMockData (Klass, funcName, funcType) {
@@ -114,7 +130,7 @@ function getFuncTest(Klass, funcName, funcType, angularType) {
   const asyncStr = funcMockData.isAsync ? 'await ' : '';
 
   return `
-    it('${itBlockName}', async () => {
+    it('${itBlockName}', ${funcMockData.isAsync ? 'async ' : ''}() => {
       ${funcMockJS.join(';\n')}${funcMockJS.length ? ';' : ''}
       ${asyncStr}${jsToRun};
       ${funcAssertJS.join(';\n')}${funcAssertJS.length ? ';' : ''}
@@ -165,8 +181,8 @@ function run (tsFile) {
     const ctorParamJs = Util.getFuncParamJS(ctorMockData.params);
     ejsData.ctorParamJs = Util.indent(ctorParamJs, ' '.repeat(6)).trim();
     ejsData.providerMocks = testGenerator.getProviderMocks(ctorMockData.params);
-    // for (var key in ejsData.providerMocks) {
-    //   ejsData.providerMocks[key] = Util.indent(ejsData.providerMocks[key]).replace(/\{\s+\}/gm, '{}');
+    // for (const key in ejsData.providerMocks.providers) {
+    //   ejsData.providerMocks.providers[key] = Util.indent(ejsData.providerMocks.providers[key]).replace(/\{\s+\}/gm, '{}');
     // }
 
     const errors = [];

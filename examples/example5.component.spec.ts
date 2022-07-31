@@ -45,37 +45,16 @@ class MockServiceFifteen {}
 @Injectable()
 class MockServiceThirteen {}
 
-@Directive({ selector: '[oneviewPermitted]' })
-class OneviewPermittedDirective {
-  @Input() oneviewPermitted;
-}
-
-@Pipe({name: 'translate'})
-class TranslatePipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'phoneNumber'})
-class PhoneNumberPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'safeHtml'})
-class SafeHtmlPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
 describe('Example5Component', () => {
-  let fixture;
-  let component;
+  let fixture: ComponentFixture<Example5Component>;
+  let component: Example5Component;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ FormsModule, ReactiveFormsModule ],
       declarations: [
         Example5Component,
-        TranslatePipe, PhoneNumberPipe, SafeHtmlPipe,
-        OneviewPermittedDirective
+
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ],
       providers: [
@@ -92,8 +71,6 @@ describe('Example5Component', () => {
         { provide: ServiceFifteen, useClass: MockServiceFifteen },
         { provide: ServiceThirteen, useClass: MockServiceThirteen }
       ]
-    }).overrideComponent(Example5Component, {
-
     }).compileComponents();
     fixture = TestBed.createComponent(Example5Component);
     component = fixture.debugElement.componentInstance;
@@ -104,11 +81,11 @@ describe('Example5Component', () => {
     fixture.destroy();
   });
 
-  it('should run #constructor()', async () => {
+  it('should run #constructor()', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should run GetterDeclaration #isHhhAaa', async () => {
+  it('should run GetterDeclaration #isHhhAaa', () => {
     component.service8 = component.service8 || {};
     component.service8.bazInfo = {
       'consumer': {},
@@ -119,27 +96,27 @@ describe('Example5Component', () => {
 
   });
 
-  it('should run #ngOnInit()', async () => {
+  it('should run #ngOnInit()', () => {
     component.ssssMmmm = component.ssssMmmm || {};
     component.ssssMmmm.lob = 'lob';
     component.service9 = component.service9 || {};
-    component.service9.getdetails = jest.fn().mockReturnValue(observableOf({}));
-    component.service9.getPostDatedPPC = jest.fn().mockReturnValue(observableOf({}));
-    component.service9.getIiiiiiiii = jest.fn().mockReturnValue(observableOf({}));
-    component.service9.getFooBar1Summary = jest.fn().mockReturnValue(observableOf({}));
-    component.service9.getSssAaaLll = jest.fn();
-    component.service9.handleEeeDT = jest.fn();
+    spyOn(component.service9, 'getdetails').and.returnValue(observableOf({}));
+    spyOn(component.service9, 'getPostDatedPPC').and.returnValue(observableOf({}));
+    spyOn(component.service9, 'getIiiiiiiii').and.returnValue(observableOf({}));
+    spyOn(component.service9, 'getFooBar1Summary').and.returnValue(observableOf({}));
+    spyOn(component.service9, 'getSssAaaLll');
+    spyOn(component.service9, 'handleEeeDT');
     component.service12 = component.service12 || {};
     component.service12.getSssIiiiD = observableOf({});
     component.serviceSixteen = component.serviceSixteen || {};
-    component.serviceSixteen.getEeeDddSsss = jest.fn().mockReturnValue({
+    spyOn(component.serviceSixteen, 'getEeeDddSsss').and.returnValue({
       nnnPpp: {}
     });
     component.service15 = component.service15 || {};
-    component.service15.getTttAaa = jest.fn().mockReturnValue(observableOf({
+    spyOn(component.service15, 'getTttAaa').and.returnValue(observableOf({
       ecid: {}
     }));
-    component.service15.getSD = jest.fn().mockReturnValue(observableOf({}));
+    spyOn(component.service15, 'getSD').and.returnValue(observableOf({}));
     component.ngOnInit();
     // expect(component.service9.getdetails).toHaveBeenCalled();
     // expect(component.service9.getPostDatedPPC).toHaveBeenCalled();
@@ -152,7 +129,7 @@ describe('Example5Component', () => {
     // expect(component.service15.getSD).toHaveBeenCalled();
   });
 
-  it('should run #updateHanoi()', async () => {
+  it('should run #updateHanoi()', () => {
     component.fffCccDddd = component.fffCccDddd || {};
     component.fffCccDddd.nativeElement = {
       offsetHeight: {}
@@ -173,9 +150,9 @@ describe('Example5Component', () => {
 
   });
 
-  it('should run #openSsMmD()', async () => {
+  it('should run #openSsMmD()', () => {
     component.ServiceThree = component.ServiceThree || {};
-    component.ServiceThree.open = jest.fn();
+    spyOn(component.ServiceThree, 'open');
     component.openSsMmD({});
     // expect(component.ServiceThree.open).toHaveBeenCalled();
   });
@@ -186,15 +163,15 @@ describe('Example5Component', () => {
       fooOneCode: {}
     };
     component.service6 = component.service6 || {};
-    component.service6.isFooDone = jest.fn();
+    spyOn(component.service6, 'isFooDone');
     component.ServiceThree = component.ServiceThree || {};
-    component.ServiceThree.open = jest.fn().mockReturnValue({
+    spyOn(component.ServiceThree, 'open').and.returnValue({
       fooOneCodeChange$: observableOf({})
     });
     component.service13 = component.service13 || {};
-    component.service13.checkFfCuI = jest.fn();
+    spyOn(component.service13, 'checkFfCuI');
     component.component3 = component.component3 || {};
-    component.component3.changePlPr = jest.fn();
+    spyOn(component.component3, 'changePlPr');
     await component.startFfPp({});
     // expect(component.service6.isFooDone).toHaveBeenCalled();
     // expect(component.ServiceThree.open).toHaveBeenCalled();
@@ -211,15 +188,15 @@ describe('Example5Component', () => {
       nnnAaaa: {}
     };
     component.service6 = component.service6 || {};
-    component.service6.isFooDone = jest.fn();
+    spyOn(component.service6, 'isFooDone');
     component.ServiceThree = component.ServiceThree || {};
-    component.ServiceThree.open = jest.fn().mockReturnValue({
+    spyOn(component.ServiceThree, 'open').and.returnValue({
       fooOneCodeChange$: observableOf({})
     });
     component.service10 = component.service10 || {};
-    component.service10.handleFooCodeChange = jest.fn();
-    component.service10.checkTyEl = jest.fn();
-    component.service10.upgradeDwHa = jest.fn();
+    spyOn(component.service10, 'handleFooCodeChange');
+    spyOn(component.service10, 'checkTyEl');
+    spyOn(component.service10, 'upgradeDwHa');
     await component.handleFlBu({
       detail: {
         ccc: {}
@@ -232,7 +209,7 @@ describe('Example5Component', () => {
     // expect(component.service10.upgradeDwHa).toHaveBeenCalled();
   });
 
-  it('should run #goIgTTo()', async () => {
+  it('should run #goIgTTo()', () => {
     component.el = component.el || {};
     component.el.nativeElement = {
       dispatchEvent: function() {}

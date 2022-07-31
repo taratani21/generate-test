@@ -27,37 +27,16 @@ class MockEncryptionService {
   decrypt = function() {};
 }
 
-@Directive({ selector: '[oneviewPermitted]' })
-class OneviewPermittedDirective {
-  @Input() oneviewPermitted;
-}
-
-@Pipe({name: 'translate'})
-class TranslatePipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'phoneNumber'})
-class PhoneNumberPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'safeHtml'})
-class SafeHtmlPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
 describe('TotalDataDetailsComponent', () => {
-  let fixture;
-  let component;
+  let fixture: ComponentFixture<TotalDataDetailsComponent>;
+  let component: any;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ FormsModule, ReactiveFormsModule ],
       declarations: [
         TotalDataDetailsComponent,
-        TranslatePipe, PhoneNumberPipe, SafeHtmlPipe,
-        OneviewPermittedDirective
+
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ],
       providers: [
@@ -77,24 +56,16 @@ describe('TotalDataDetailsComponent', () => {
         { provide: DataManagerService, useClass: MockDataManagerService },
         { provide: EncryptionService, useClass: MockEncryptionService }
       ]
-    }).overrideComponent(TotalDataDetailsComponent, {
-
-      set: { providers: [{ provide: SuspendcccService, useClass: MockSuspendcccService }] }    
     }).compileComponents();
     fixture = TestBed.createComponent(TotalDataDetailsComponent);
     component = fixture.debugElement.componentInstance;
   });
 
-  afterEach(() => {
-    component.ngOnDestroy = function() {};
-    fixture.destroy();
-  });
-
-  it('should run #constructor()', async () => {
+  it('should run #constructor()', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should run #ngOnInit()', async () => {
+  it('should run #ngOnInit()', () => {
     component.ssssMmmm = component.ssssMmmm || {};
     component.ssssMmmm.subList = [
       {
@@ -112,22 +83,22 @@ describe('TotalDataDetailsComponent', () => {
         numSxFoo: {}
       }]
     };
-    component.getPastUsage1 = jest.fn().mockReturnValue({
+    spyOn(component, 'getPastUsage1').and.returnValue({
       cccDataUsed: {},
       dates: {}
     });
-    component.getPastUsage2 = jest.fn().mockReturnValue([
+    spyOn(component, 'getPastUsage2').and.returnValue([
       "cccDataUsed2",
       "dates2"
     ]);
-    component.getPastUsage3 = jest.fn();
+    spyOn(component, 'getPastUsage3');
     component.ngOnInit();
     // expect(component.getPastUsage1).toHaveBeenCalled();
     // expect(component.getPastUsage2).toHaveBeenCalled();
     // expect(component.getPastUsage3).toHaveBeenCalled();
   });
 
-  it('should run #getPrimaryccc()', async () => {
+  it('should run #getPrimaryccc()', () => {
     component.service8 = component.service8 || {};
     component.service8.ssssMmmm = {
       subList: [{
@@ -149,27 +120,27 @@ describe('TotalDataDetailsComponent', () => {
 
   });
 
-  it('should run #openErrorserviceThree()', async () => {
+  it('should run #openErrorserviceThree()', () => {
     component.serviceThree = component.serviceThree || {};
-    component.serviceThree.open = jest.fn().mockReturnValue({
+    spyOn(component.serviceThree, 'open').and.returnValue({
       serviceThreeOutput: {}
     });
     component.serviceFive = component.serviceFive || {};
-    component.serviceFive.instant = jest.fn();
+    spyOn(component.serviceFive, 'instant');
     component.openErrorserviceThree({}, {});
     // expect(component.serviceThree.open).toHaveBeenCalled();
     // expect(component.serviceFive.instant).toHaveBeenCalled();
   });
 
-  it('should run #getWirelessDetails()', async () => {
-    component.getPostPaidDetails = jest.fn();
-    component.getCurrentSubsidy = jest.fn();
+  it('should run #getWirelessDetails()', () => {
+    spyOn(component, 'getPostPaidDetails');
+    spyOn(component, 'getCurrentSubsidy');
     component.getWirelessDetails();
     // expect(component.getPostPaidDetails).toHaveBeenCalled();
     // expect(component.getCurrentSubsidy).toHaveBeenCalled();
   });
 
-  it('should run #getBonusDataListForSharing()', async () => {
+  it('should run #getBonusDataListForSharing()', () => {
     component.data = component.data || {};
     component.data.ccc = 'ccc';
     component.getBonusDataListForSharing({}, {
@@ -180,7 +151,7 @@ describe('TotalDataDetailsComponent', () => {
 
   });
 
-  it('should run #getPastUsage()', async () => {
+  it('should run #getPastUsage()', () => {
 
     component.getPastUsage([{
       shared_bundles: {
@@ -191,7 +162,7 @@ describe('TotalDataDetailsComponent', () => {
 
   });
 
-  it('should run #funcParamAsArray()', async () => {
+  it('should run #funcParamAsArray()', () => {
 
     component.funcParamAsArray([{
       foo: {
@@ -209,7 +180,7 @@ describe('TotalDataDetailsComponent', () => {
 
   });
 
-  it('should run #funcParamAsObject()', async () => {
+  it('should run #funcParamAsObject()', () => {
 
     component.funcParamAsObject(observableOf({
       param3: {
@@ -230,7 +201,7 @@ describe('TotalDataDetailsComponent', () => {
 
   });
 
-  it('should run #funcParamAsCombined()', async () => {
+  it('should run #funcParamAsCombined()', () => {
 
     component.funcParamAsCombined(observableOf({
       foo: {
