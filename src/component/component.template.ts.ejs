@@ -27,7 +27,7 @@ describe('<%- className %>', () => {
   let fixture: ComponentFixture<<%- className %>>;
   let component: <%- className %>;
 
-  <%- providerMocks.declarations.join(';\n  ') %>;
+  <%- `${providerMocks.declarations.join('\n  ')}` %>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -45,7 +45,9 @@ describe('<%- className %>', () => {
     fixture = TestBed.createComponent(<%- className %>);
     component = fixture.componentInstance;
 
-    <%- providerMocks.assignments.join(';\n    ') %>;
+    <%- providerMocks.assignments.join('\n    ') %>
+
+    fixture.detectChanges();
   });
 
   it('should run #constructor()', () => {

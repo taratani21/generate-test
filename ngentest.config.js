@@ -30,6 +30,7 @@ export const providerMocks = {
   HttpClient: ['post() {};'],
   TranslateService: ['translate() {};'],
   EncryptionService: [],
+  CartService: ['getShippingPrices() {};']
 };
 export const includeMatch = [/(component|directive|pipe|service).ts/];
 export const excludeMatch = [];

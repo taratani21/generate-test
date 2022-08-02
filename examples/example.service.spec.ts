@@ -33,9 +33,9 @@ describe('DynamicComponentService', () => {
       });
   });
 
-  it('should run #createComponent()', async () => {
+  it('should run #createComponent()', () => {
     service.factoryResolver = service.factoryResolver || {};
-    service.factoryResolver.resolveComponentFactory = jest.fn().mockReturnValue({
+    spyOn(service.factoryResolver, 'resolveComponentFactory').and.returnValue({
       create: function() {}
     });
     service.createComponent({}, {}, {
@@ -44,9 +44,9 @@ describe('DynamicComponentService', () => {
     // expect(service.factoryResolver.resolveComponentFactory).toHaveBeenCalled();
   });
 
-  it('should run #insertComponent()', async () => {
+  it('should run #insertComponent()', () => {
     service.rootViewContainer = service.rootViewContainer || {};
-    service.rootViewContainer.insert = jest.fn();
+    spyOn(service.rootViewContainer, 'insert');
     service.insertComponent({
       location: {
         nativeElement: {
@@ -61,7 +61,7 @@ describe('DynamicComponentService', () => {
     // expect(service.rootViewContainer.insert).toHaveBeenCalled();
   });
 
-  it('should run #emptyFunction()', async () => {
+  it('should run #emptyFunction()', () => {
 
     service.emptyFunction();
 

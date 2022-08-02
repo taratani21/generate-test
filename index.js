@@ -117,14 +117,10 @@ function getFuncTest(Klass, funcName, funcType, angularType, sources) {
   return `
     it('${itBlockName}', ${funcMockData.isAsync ? 'async ' : ''}() => {
       ${funcMockJS.join(';\n')}${funcMockJS.length ? ';' : ''}
-      ${asyncStr}${jsToRun};
+      ${asyncStr}${jsToRun};\n
       ${funcAssertJS.join(';\n')}${funcAssertJS.length ? ';' : ''}
     });
     `;
-}
-
-function getMockServices(serviceMap, constructor) {
-  // ejsData.config.services = Object.values(serviceMap);
 }
 
 function run (tsFile) {
@@ -175,7 +171,7 @@ function run (tsFile) {
     // }
 
     const errors = [];
-    const services = Object.keys(ejsData.services);
+    const services = ejsData.services ? Object.keys(ejsData.services) : [];
     testGenerator.klassSetters.forEach(setter => {
       const setterName = setter.node.name.escapedText;
       ejsData.accessorTests[`${setterName} SetterDeclaration`] =

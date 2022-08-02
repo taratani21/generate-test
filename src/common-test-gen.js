@@ -251,8 +251,8 @@ export function getProviderMocks(ctorMockData) {
       providerMocks.providers.push(type);
     }
 
-    providerMocks.declarations.push(`let ${name}: ${type}`);
-    providerMocks.assignments.push(`${name} = TestBed.inject(${type})`);
+    providerMocks.declarations.push(`let ${name}: ${type};`);
+    providerMocks.assignments.push(`${name} = TestBed.inject(${type});`);
   });
 
   return providerMocks;
