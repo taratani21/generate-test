@@ -1,20 +1,4 @@
 #!/usr/bin/env node
-// const fs = require('fs');
-// const path = require('path'); // eslint-disable-line
-// const yargs = require('yargs');
-// const ts = require('typescript');
-// const requireFromString = require('require-from-string');
-// const glob = require('glob');
-
-// const config = require('./ngentest.config');
-// const Util = require('./src/util.js');
-// const FuncTestGen = require('./src/func-test-gen.js');
-
-// const ComponentTestGen = require('./src/component/component-test-gen.js');
-// const DirectiveTestGen = require('./src/directive/directive-test-gen.js');
-// const InjectableTestGen = require('./src/injectable/injectable-test-gen.js');
-// const PipeTestGen = require('./src/pipe/pipe-test-gen.js');
-// const ClassTestGen = require('./src/class/class-test-gen.js');
 
 import fs from 'fs';
 import path from 'path';
@@ -62,6 +46,7 @@ const tsFile = argv._[0].replace(/\.spec\.ts$/, '.ts');
 // const writeToSpec = argv.spec;
 if (!(tsFile && fs.existsSync(tsFile))) {
   console.error('Error. invalid typescript file. e.g., Usage $0 <tsFile> [options]');
+  // eslint-disable-next-line no-undef
   process.exit(1);
 }
 
@@ -109,16 +94,16 @@ function getTestGenerator (tsPath, config) {
   return testGenerator;
 }
 
-function getFuncTest(Klass, funcName, funcType, angularType) {
+function getFuncTest(Klass, funcName, funcType, angularType, sources) {
   Util.DEBUG &&
     console.log('\x1b[36m%s\x1b[0m', `\nPROCESSING #${funcName}`);
 
   const funcMockData = getFuncMockData(Klass, funcName, funcType);
-  const [allFuncMockJS, asserts] = Util.getFuncMockJS(funcMockData, angularType);
+  const [allFuncMockJS, asserts] = Util.getFuncMockJS(funcMockData, angularType, sources);
   const funcMockJS = [...new Set(allFuncMockJS)];
   const funcParamJS = Util.getFuncParamJS(funcMockData.params);
 
-  const funcAssertJS = asserts.map(el => `// expect(${el.join('.')}).toHaveBeenCalled()`);
+  const funcAssertJS = asserts.map(el => `// expect(${el.join('.').replace(/^\./, '')}).toHaveBeenCalled()`);
   const jsToRun = 
     funcType === 'set' ? `${angularType}.${funcName} = ${funcParamJS || '{}'}`: 
     funcType === 'get' ? `const ${funcName} = ${angularType}.${funcName}` : 
@@ -136,6 +121,10 @@ function getFuncTest(Klass, funcName, funcType, angularType) {
       ${funcAssertJS.join(';\n')}${funcAssertJS.length ? ';' : ''}
     });
     `;
+}
+
+function getMockServices(serviceMap, constructor) {
+  // ejsData.config.services = Object.values(serviceMap);
 }
 
 function run (tsFile) {
@@ -186,22 +175,23 @@ function run (tsFile) {
     // }
 
     const errors = [];
+    const services = Object.keys(ejsData.services);
     testGenerator.klassSetters.forEach(setter => {
       const setterName = setter.node.name.escapedText;
       ejsData.accessorTests[`${setterName} SetterDeclaration`] =
-        Util.indent(getFuncTest(Klass, setterName, 'set', angularType), '  ');
+        Util.indent(getFuncTest(Klass, setterName, 'set', angularType, services), '  ');
     });
     testGenerator.klassGetters.forEach(getter => {
       const getterName = getter.node.name.escapedText;
       ejsData.accessorTests[`${getterName} GetterDeclaration`] =
-        Util.indent(getFuncTest(Klass, getterName, 'get', angularType), '  ');
+        Util.indent(getFuncTest(Klass, getterName, 'get', angularType, services), '  ');
     });
 
     testGenerator.klassMethods.forEach(method => {
       const methodName = method.node.name.escapedText;
       try {
         ejsData.functionTests[methodName] =
-          Util.indent(getFuncTest(Klass, methodName, 'method', angularType), '  ');
+          Util.indent(getFuncTest(Klass, methodName, 'method', angularType, services), '  ');
       } catch (e) {
         const msg = '    // '+ e.stack;
         const itBlock = `it('should run #${method.name}()', async () => {\n` +
@@ -211,7 +201,6 @@ function run (tsFile) {
         errors.push(e);
       }
     });
-
     // console.log('..................................................................')
     // console.log(ejsData)
     // console.log('..................................................................')
@@ -221,6 +210,7 @@ function run (tsFile) {
     errors.forEach( e => console.error(e) );
   } catch (e) {
     console.error(e);
+    // eslint-disable-next-line no-undef
     process.exit(1);
   }
 }

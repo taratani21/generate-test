@@ -553,11 +553,12 @@ class Util {
     }
   }
 
-  static getFuncMockJS(mockData, thisName = 'component') {
+  static getFuncMockJS(mockData, thisNameInput = 'component', sources) {
     const js = [];
     const asserts = [];
 
     Object.entries(mockData.props).forEach(([key1, value]) => {
+      const thisName = sources.includes(key1) ? '' : thisNameInput;
       if (typeof value === 'function') {
         const funcRetVal = value();
         if (typeof funcRetVal === 'string' || Object.keys(funcRetVal).length === 0) {
@@ -570,33 +571,36 @@ class Util {
       } else {
         const valueFiltered = Object.entries(value).filter(([k, v]) => k !== 'undefined');
         valueFiltered.forEach(([key2, value2]) => {
-          js.push(`${thisName}.${key1} = ${thisName}.${key1} || {}`);
+          const identifier = sources.includes(key1) ? `${key1}` : `${thisName}.${key1}`;
+          if (!sources.includes(key1)) {
+            js.push(`${identifier} = ${identifier} || {}`);
+          }
           if (typeof value2 === 'function' && key2.match(/^(post|put)$/)) {
-            js.push(Util.getMockFn([thisName, key1, key2], `observableOf('${key2}')`));
-            asserts.push([thisName, key1, key2]);
+            js.push(Util.getMockFn([identifier, key2], `observableOf('${key2}')`));
+            asserts.push([identifier, key2]);
           } else if (key2.match(arrFuncRE)) {
             if (typeof value2[key2] === 'function') {
               const arrElValue = value2[key2]();
               const arrElValueJS = Util.objToJS(arrElValue);
-              js.push(`${thisName}.${key1} = ${arrElValueJS}`);
+              js.push(`${identifier} = ${arrElValueJS}`);
             } else {
-              js.push(`${thisName}.${key1} = ['${key1}']`);
+              js.push(`${identifier} = ['${key1}']`);
             }
           } else if (typeof value2 === 'function' && JSON.stringify(value2()) === '{}') {
             const funcRetVal = value2();
             const funcRet1stKey = Util.getFirstKey(funcRetVal);
             if (typeof funcRetVal === 'object' && ['toPromise'].includes(funcRet1stKey)) {
               const retStr = Util.objToJS(funcRetVal[funcRet1stKey]());
-              js.push(Util.getMockFn([thisName, key1, key2], `observableOf(${retStr})`));
+              js.push(Util.getMockFn([identifier, key2], `observableOf(${retStr})`));
             } else if (typeof funcRetVal === 'object' && ['filter'].includes(funcRet1stKey)) {
               const retStr = Util.objToJS(funcRetVal[funcRet1stKey]());
-              js.push(Util.getMockFn([thisName, key1, key2], `[${retStr}]`));
+              js.push(Util.getMockFn([identifier, key2], `[${retStr}]`));
             } else if (typeof funcRetVal === 'object' && funcRet1stKey) {
-              js.push(Util.getMockFn([thisName, key1, key2], `${Util.objToJS(funcRetVal)}`));
+              js.push(Util.getMockFn([identifier, key2], `${Util.objToJS(funcRetVal)}`));
             } else {
-              js.push(Util.getMockFn([thisName, key1, key2]));
+              js.push(Util.getMockFn([identifier, key2]));
             }
-            asserts.push([thisName, key1, key2]);
+            asserts.push([identifier, key2]);
             // const funcRetValEmpty = Object.as`funcRetVal
           } else if (['length'].includes(key2)) {
             // do nothing
@@ -604,32 +608,32 @@ class Util {
             const funcRetVal = value2();
             if (typeof funcRetVal === 'string' || Object.keys(funcRetVal).length === 0) {
               // e.g. myVar from `const myVar = this.foo.var();`
-              js.push(Util.getMockFn([thisName, key1, key2]));
+              js.push(Util.getMockFn([identifier, key2]));
             } else {
-              js.push(Util.getMockFn([thisName, key1, key2], `${Util.objToJS(funcRetVal)}`));
+              js.push(Util.getMockFn([identifier, key2], `${Util.objToJS(funcRetVal)}`));
             }
-            asserts.push([thisName, key1, key2]);
+            asserts.push([identifier, key2]);
           } else if (Array.isArray(value2)) {
             // const fnValue2 = Util.objToJS(value2).replace(/\{\s+\}/gm, '{}');
-            js.push(`${thisName}.${key1}.${key2} = ['gentest']`);
+            js.push(`${identifier}.${key2} = ['gentest']`);
           } else {
             const objVal21stKey = Object.keys(value2)[0];
             if (objVal21stKey && objVal21stKey.match(arrFuncRE)) {
               if (typeof value2[objVal21stKey] === 'function') {
                 const arrElValue = value2[objVal21stKey]();
                 const arrElValueJS = Util.objToJS(arrElValue);
-                js.push(`${thisName}.${key1}.${key2} = ${arrElValueJS}`);
+                js.push(`${identifier}.${key2} = ${arrElValueJS}`);
               } else {
-                js.push(`${thisName}.${key1}.${key2} = ['${key2}']`);
+                js.push(`${identifier}.${key2} = ['${key2}']`);
               }
             } else if (objVal21stKey && objVal21stKey.match(strFuncRE)) {
-              js.push(`${thisName}.${key1}.${key2} = '${key2}'`);
+              js.push(`${identifier}.${key2} = '${key2}'`);
             } else {
               const objValue2 = Util.objToJS(value2).replace(/\{\s+\}/gm, '{}');
               if (objValue2 === '{}') {
-                js.push(`${thisName}.${key1}.${key2} = '${key2}'`);
+                js.push(`${identifier}.${key2} = '${key2}'`);
               } else {
-                js.push(`${thisName}.${key1}.${key2} = ${objValue2}`);
+                js.push(`${identifier}.${key2} = ${objValue2}`);
               }
             }
           }

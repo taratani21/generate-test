@@ -1,4 +1,3 @@
-// tslint:disable
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Pipe, PipeTransform, Injectable, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA, Directive, Input, Output } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -11,37 +10,16 @@ import { Example4Component } from './example4.component';
 import { ActivatedRoute } from '@angular/router';
 import { ServiceFive } from '@ngx-serviceFive/core';
 
-@Directive({ selector: '[oneviewPermitted]' })
-class OneviewPermittedDirective {
-  @Input() oneviewPermitted;
-}
-
-@Pipe({name: 'translate'})
-class TranslatePipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'phoneNumber'})
-class PhoneNumberPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
-@Pipe({name: 'safeHtml'})
-class SafeHtmlPipe implements PipeTransform {
-  transform(value) { return value; }
-}
-
 describe('Example4Component', () => {
-  let fixture;
-  let component;
+  let fixture: ComponentFixture<Example4Component>;
+  let component: any;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
       imports: [ FormsModule, ReactiveFormsModule ],
       declarations: [
         Example4Component,
-        TranslatePipe, PhoneNumberPipe, SafeHtmlPipe,
-        OneviewPermittedDirective
+
       ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ],
       providers: [
@@ -58,55 +36,48 @@ describe('Example4Component', () => {
         },
         ServiceFive
       ]
-    }).overrideComponent(Example4Component, {
-
     }).compileComponents();
     fixture = TestBed.createComponent(Example4Component);
-    component = fixture.debugElement.componentInstance;
+    component = fixture.componentInstance;
   });
 
-  afterEach(() => {
-    component.ngOnDestroy = function() {};
-    fixture.destroy();
-  });
-
-  it('should run #constructor()', async () => {
+  it('should run #constructor()', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should run SetterDeclaration #pppCcccc', async () => {
+  it('should run SetterDeclaration #pppCcccc', () => {
 
     component.pppCcccc = {};
 
   });
 
-  it('should run GetterDeclaration #pppCcccc', async () => {
+  it('should run GetterDeclaration #pppCcccc', () => {
 
     const pppCcccc = component.pppCcccc;
 
   });
 
-  it('should run #ngOnInit()', async () => {
+  it('should run #ngOnInit()', () => {
     component.route = component.route || {};
     component.route.snapshot = {
       data: {
         'iiiiiiiii': {}
       }
     };
-    component.getIiiiiiiii = jest.fn();
+    spyOn(component, 'getIiiiiiiii');
     component.iiiiiiiii = component.iiiiiiiii || {};
     component.iiiiiiiii = ['iiiiiiiii'];
     component.ngOnInit();
     // expect(component.getIiiiiiiii).toHaveBeenCalled();
   });
 
-  it('should run #ngAfterViewInit()', async () => {
+  it('should run #ngAfterViewInit()', () => {
 
     component.ngAfterViewInit();
 
   });
 
-  it('should run #applyFilter()', async () => {
+  it('should run #applyFilter()', () => {
 
     component.applyFilter({
       target: {
@@ -116,9 +87,9 @@ describe('Example4Component', () => {
 
   });
 
-  it('should run #getIiiiiiiii()', async () => {
+  it('should run #getIiiiiiiii()', () => {
     component.serviceFive = component.serviceFive || {};
-    component.serviceFive.instant = jest.fn();
+    spyOn(component.serviceFive, 'instant');
     component.getIiiiiiiii({
       error: {},
       filter: function() {
@@ -132,13 +103,13 @@ describe('Example4Component', () => {
     // expect(component.serviceFive.instant).toHaveBeenCalled();
   });
 
-  it('should run #searchIiiiiiiii()', async () => {
+  it('should run #searchIiiiiiiii()', () => {
 
     component.searchIiiiiiiii({});
 
   });
 
-  it('should run #tttSssIii()', async () => {
+  it('should run #tttSssIii()', () => {
 
     component.tttSssIii('tttIiii', 'param');
 

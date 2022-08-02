@@ -95,6 +95,27 @@ export function getKlassGetters() {
 export function getKlassMethods() {
   return __toArray(this.klass.get('MethodDeclaration'));
 }
+export function getKlassConstructor() {
+  return this.klass.get('Constructor')[0];
+}
+export function getKlassServices() {
+  const constructor = this.klass.get('Constructor');
+  if (!constructor) { return {}; }
+
+  var services = {};
+  const parameters = __toArray(constructor.get('Parameter'));
+  parameters.forEach(node => {
+    const identifier = node.get('Identifier').nodeText;
+    const typeReferenceNode = node.get('TypeReference');
+    services[identifier] = {
+      identifier: identifier,
+      mockIdentifier: `mock${identifier[0].toUpperCase()}${identifier.slice(1)}`,
+      type: typeReferenceNode ? typeReferenceNode.nodeText : 'any'
+    }
+  });
+
+  return services;
+}
 
 export function getKlass() {
   const parsed = new TypescriptParser(this.typescript);
@@ -161,7 +182,7 @@ export function getImportMocks() {
 }
 
 export function getProviderMocks(ctorMockData) {
-  const providerMocks = { providers: [], mocks: [] };
+  const providerMocks = { providers: [], mocks: [], declarations: [], assignments: [] };
   if (!this.klass.get('Constructor').node) {
     return providerMocks;
   }
@@ -229,6 +250,9 @@ export function getProviderMocks(ctorMockData) {
     } else {
       providerMocks.providers.push(type);
     }
+
+    providerMocks.declarations.push(`let ${name}: ${type}`);
+    providerMocks.assignments.push(`${name} = TestBed.inject(${type})`);
   });
 
   return providerMocks;

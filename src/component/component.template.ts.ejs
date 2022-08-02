@@ -25,7 +25,9 @@ class <%- pipe.charAt(0).toUpperCase() + pipe.slice(1) -%>Pipe implements PipeTr
 
 describe('<%- className %>', () => {
   let fixture: ComponentFixture<<%- className %>>;
-  let component: any;
+  let component: <%- className %>;
+
+  <%- providerMocks.declarations.join(';\n  ') %>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -42,6 +44,8 @@ describe('<%- className %>', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(<%- className %>);
     component = fixture.componentInstance;
+
+    <%- providerMocks.assignments.join(';\n    ') %>;
   });
 
   it('should run #constructor()', () => {

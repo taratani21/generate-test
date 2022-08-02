@@ -1,4 +1,3 @@
-// tslint:disable
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { Pipe, PipeTransform, Injectable, CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA, Directive, Input, Output } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -31,6 +30,11 @@ describe('TotalDataDetailsComponent', () => {
   let fixture: ComponentFixture<TotalDataDetailsComponent>;
   let component: any;
 
+  let serviceFive: ServiceFive;
+  let mockHttpClient: MockHttpClient;
+  let mockDataManagerService: MockDataManagerService;
+  let mockEncryptionService: MockEncryptionService;
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ FormsModule, ReactiveFormsModule ],
@@ -58,7 +62,12 @@ describe('TotalDataDetailsComponent', () => {
       ]
     }).compileComponents();
     fixture = TestBed.createComponent(TotalDataDetailsComponent);
-    component = fixture.debugElement.componentInstance;
+    component = fixture.componentInstance;
+
+    serviceFive = TestBed.inject(ServiceFive);
+    mockHttpClient = TestBed.inject(HttpClient);
+    mockDataManagerService = TestBed.inject(DataManagerService);
+    mockEncryptionService = TestBed.inject(EncryptionService);
   });
 
   it('should run #constructor()', () => {
@@ -125,11 +134,10 @@ describe('TotalDataDetailsComponent', () => {
     spyOn(component.serviceThree, 'open').and.returnValue({
       serviceThreeOutput: {}
     });
-    component.serviceFive = component.serviceFive || {};
-    spyOn(component.serviceFive, 'instant');
+    spyOn(mockServiceFive, 'instant');
     component.openErrorserviceThree({}, {});
     // expect(component.serviceThree.open).toHaveBeenCalled();
-    // expect(component.serviceFive.instant).toHaveBeenCalled();
+    // expect(mockServiceFive.instant).toHaveBeenCalled();
   });
 
   it('should run #getWirelessDetails()', () => {

@@ -1,7 +1,7 @@
 import { resolve } from 'path';
 import { existsSync, readFileSync } from 'fs';
 
-import { getKlass, getImports, getAngularType, getKlassProperties, getKlassGetters, getKlassSetters, getKlassMethods, getProviderMocks, getGenerated, writeGenerated, getImportMocks, getInputMocks, getOutputMocks, getComponentProviderMocks, getDirectiveSelector } from '../common-test-gen.js';
+import { getKlass, getImports, getAngularType, getKlassProperties, getKlassGetters, getKlassSetters, getKlassMethods, getProviderMocks, getGenerated, writeGenerated, getImportMocks, getInputMocks, getOutputMocks, getComponentProviderMocks, getDirectiveSelector, getKlassServices } from '../common-test-gen.js';
 
 class ComponentTestGen {
   constructor (tsPath, config) {
@@ -37,6 +37,7 @@ class ComponentTestGen {
       outputMocks: getOutputMocks.bind(this)(),
       componentProviderMocks: getComponentProviderMocks.bind(this)(),
       selector: getDirectiveSelector.bind(this)(),
+      services: getKlassServices.bind(this)(),
 
       ctorParamJs: undefined, // declarition only, will be set from mockData
       providerMocks: undefined, //  declarition only, will be set from mockData
